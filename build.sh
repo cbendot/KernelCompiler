@@ -12,6 +12,8 @@ export DEVICES=X00TD
 
 source helper
 
+kernel_source
+
 gen_toolchain
 
 send_msg "⏳ Suit-Suit... He-He | Building Kernel ${KERNELNAME} | $DATE"
