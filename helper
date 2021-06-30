@@ -50,7 +50,7 @@ send_msg(){
 send_file(){
 	print "Sending file..." green
 	curl -F chat_id="${chat_id}" \
-		-F caption="Suit-Suit... He-He... Build Successful! | Gue Ganteng $DATE " \
+		-F caption="✅ Suit-Suit... He-He... Build Successful! | Gue Ganteng $DATE " \
 		-F document=@"${1}" \
 		 https://api.telegram.org/bot"${bot_token}"/sendDocument
 }
@@ -65,7 +65,7 @@ mkzip(){
 		cd ..
 		send_file $1
 	else
-		send_msg "Build Gagal!, Cek lagi scriptnya Woy!"
+		send_msg "❌ Build Gagal!, Cek lagi scriptnya Woy!"
 		print "Build error !" red
 		exit 1
 	fi
@@ -97,6 +97,7 @@ gen_toolchain(){
 	else
 		git clone --depth=1 https://github.com/cbendot/xRageChain-tc_build clang
 	fi
+        print "Cloning Anykernel..." green
 		git clone --depth=1 https://github.com/cbendot/AnyKernel3 -b X00TD anykernel
 }
 
