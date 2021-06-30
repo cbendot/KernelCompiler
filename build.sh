@@ -6,22 +6,22 @@ export KBUILD_BUILD_USER=ben863
 
 export KBUILD_BUILD_HOST=LiteSpeed
 
-export TOOLCHAIN=gcc
+export TOOLCHAIN=clang
 
-export DEVICES=X00T
+export DEVICES=X00TD
 
 source helper
 
 gen_toolchain
 
-send_msg "⏳ Suit-Suit... He-He | Building Kernel ${KERNELNAME}"
+send_msg "⏳ Suit-Suit... He-He | Building Kernel ${KERNELNAME} | $DATE"
 
 START=$(date +"%s")
 
 for i in ${DEVICES//,/ }
 do
 
-	build ${i} -nlv
+	build ${i} -perf
 	
 done
 
