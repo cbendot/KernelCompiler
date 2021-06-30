@@ -84,6 +84,11 @@ print(){
 	esac
 }
 
+kernel_source(){
+        print "Cloning kernel source..." green
+                git clone --depth=1 https://github.com/cbendot/kernel_asus_sdm660
+}
+
 gen_toolchain(){
 	print "Cloning toolchain files..." green
 	if [ $TOOLCHAIN == "clang" ]
