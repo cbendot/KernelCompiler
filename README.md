@@ -1,1 +1,1 @@
-# this script build for compile kernel which drone ci
+# this script for compile kernel which drone ci
