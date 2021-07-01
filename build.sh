@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 echo "Downloading few Dependecies . . ."
-git clone --depth=1 https://github.com/xyz-prjkt/xRageTC_build xRageTC_build
+git clone --depth=1 https://github.com/cbendot/proton-clang clang
 git clone --depth=1 https://github.com/cbendot/kernel_asus_sdm660 asus
 
 # Main
 KERNEL_ROOTDIR=$(pwd)/asus # IMPORTANT ! Fill with your kernel source root directory.
 DEVICE_DEFCONFIG=X00TD_defconfig # IMPORTANT ! Declare your kernel source defconfig file here.
-CLANG_ROOTDIR=$(pwd)/xRageTC_build # IMPORTANT! Put your clang directory here.
+CLANG_ROOTDIR=$(pwd)/clang # IMPORTANT! Put your clang directory here.
 export KBUILD_BUILD_USER=ben863 # Change with your own name or else.
 export KBUILD_BUILD_HOST=LiteSpeed-DroneCI # Change with your own hostname.
 IMAGE=$(pwd)/asus/out/arch/arm64/boot/Image.gz-dtb
