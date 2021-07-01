@@ -1,34 +1,123 @@
- #!/bin/bash
+#!/usr/bin/env bash
+echo "Downloading few Dependecies . . ."
+git clone --depth=1 https://github.com/xyz-prjkt/xRageTC_build xRageTC_build
+git clone --depth=1 https://github.com/cbendot/kernel_asus_sdm660 asus
 
-export KERNELNAME=HMP-Perfomance
-
-export KBUILD_BUILD_USER=ben863
-
-export KBUILD_BUILD_HOST=LiteSpeed
-
-export TOOLCHAIN=gcc
-
-export DEVICES=X00TD
-
-source helper
-
-kernel_source
-
-gen_toolchain
-
-send_msg "⏳ Suit-Suit... He-He | Building Kernel ${KERNELNAME} | $DATE"
-
+# Main
+KERNEL_ROOTDIR=$(pwd)/asus # IMPORTANT ! Fill with your kernel source root directory.
+DEVICE_DEFCONFIG=X00TD_defconfig # IMPORTANT ! Declare your kernel source defconfig file here.
+CLANG_ROOTDIR=$(pwd)/xRageTC_build # IMPORTANT! Put your clang directory here.
+export KBUILD_BUILD_USER=ben863 # Change with your own name or else.
+export KBUILD_BUILD_HOST=LiteSpeed-DroneCI # Change with your own hostname.
+IMAGE=$(pwd)/asus/out/arch/arm64/boot/Image.gz-dtb
+DATE=$(date +"%F-%S")
 START=$(date +"%s")
 
-for i in ${DEVICES//,/ }
-do
+# Checking environtment
+# Warning !! Dont Change anything there without known reason.
+function check() {
+echo ================================================
+echo xKernelCompiler
+echo version : rev1.5 - gaspoll
+echo ================================================
+echo BUILDER NAME = ${KBUILD_BUILD_USER}
+echo BUILDER HOSTNAME = ${KBUILD_BUILD_HOST}
+echo DEVICE_DEFCONFIG = ${DEVICE_DEFCONFIG}
+echo CLANG_VERSION = $(${CLANG_ROOTDIR}/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')
+echo CLANG_ROOTDIR = ${CLANG_ROOTDIR}
+echo KERNEL_ROOTDIR = ${KERNEL_ROOTDIR}
+echo ================================================
+}
 
-	build ${i} -perf
-	
-done
+# Compiler
+function compile() {
 
+   # Private CI
+   curl -s -X POST "https://api.telegram.org/bot${token}/sendMessage" \
+        -d chat_id="${chat_id}" \
+        -d "disable_web_page_preview=true" \
+        -d "parse_mode=html" \
+        -d text="<b>xKernelCompiler</b>%0ABuilder Name : <code>${KBUILD_BUILD_USER}</code>%0ABuilder Host : <code>${KBUILD_BUILD_HOST}</code>%0ADevice Defconfig: <code>${DEVICE_DEFCONFIG}</code>%0AClang Version : <code>$(${CLANG_ROOTDIR}/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')</code>%0AClang Rootdir : <code>${CLANG_ROOTDIR}</code>%0AKernel Rootdir : <code>${KERNEL_ROOTDIR}</code>"
+
+   # xyzplaygrnd
+   curl -s -X POST "https://api.telegram.org/bot${token}/sendMessage" \
+        -d chat_id="-1001470991493" \
+        -d "disable_web_page_preview=true" \
+        -d "parse_mode=html" \
+        -d text="<b>xKernelCompiler</b>%0ABuilder Name : <code>${KBUILD_BUILD_USER}</code>%0ABuilder Host : <code>${KBUILD_BUILD_HOST}</code>%0ADevice Defconfig: <code>${DEVICE_DEFCONFIG}</code>%0AClang Version : <code>$(${CLANG_ROOTDIR}/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')</code>%0AClang Rootdir : <code>${CLANG_ROOTDIR}</code>%0AKernel Rootdir : <code>${KERNEL_ROOTDIR}</code>"
+
+  cd ${KERNEL_ROOTDIR}
+  make -j$(nproc) O=out ARCH=arm64 ${DEVICE_DEFCONFIG}
+  make -j$(nproc) ARCH=arm64 O=out \
+	CC=${CLANG_ROOTDIR}/bin/clang \
+	CROSS_COMPILE=${CLANG_ROOTDIR}/bin/aarch64-linux-gnu- \
+	CROSS_COMPILE_ARM32=${CLANG_ROOTDIR}/bin/arm-linux-gnueabi-
+
+   if ! [ -a "$IMAGE" ]; then
+	finerr
+	exit 1
+   fi
+        git clone --depth=1 https://github.com/cbendot/AnyKernel3 AnyKernel
+	cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
+}
+
+
+# sticker plox
+function sticker() {
+    curl -s -X POST "https://api.telegram.org/bot${token}/sendSticker" \
+        -d sticker="CAACAgUAAxkBAAECfcRg2RoccdYCRdKV9VvHTsGGzPfAGwACSwYAAio_yVZ1PSnOxIKyfSAE-aN927wS5blhsE" \
+        -d chat_id="${chat_id}"
+}
+
+function sticker() {
+    curl -s -X POST "https://api.telegram.org/bot${token}/sendSticker" \
+        -d sticker="CAACAgUAAxkBAAECfcRg2RoccdYCRdKV9VvHTsGGzPfAGwACSwYAAio_yVZ1PSnOxIKyfSAE-aN927wS5blhsE" \
+        -d chat_id="-1001470991493"
+}
+
+# Push kernel to channel
+function push() {
+    cd AnyKernel
+    ZIP=$(echo *.zip)
+    curl -F document=@$ZIP "https://api.telegram.org/bot${token}/sendDocument" \
+        -F chat_id="${chat_id}" \
+        -F "disable_web_page_preview=true" \
+        -F "parse_mode=html" \
+        -F caption="Compile took $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s). | For <b>Zenfone Max Pro M1 (X00TD)</b> | <b>$(${CLANG_ROOTDIR}/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')</b>"
+
+    curl -F document=@$ZIP "https://api.telegram.org/bot${token}/sendDocument" \
+        -F chat_id="-1001470991493" \
+        -F "disable_web_page_preview=true" \
+        -F "parse_mode=html" \
+        -F caption="Compile took $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s). | For <b>Zenfone Max Pro M1 (X00TD)</b> | <b>$(${CLANG_ROOTDIR}/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')</b>"
+
+}
+# Fin Error
+function finerr() {
+    curl -s -X POST "https://api.telegram.org/bot${token}/sendMessage" \
+        -d chat_id="${chat_id}" \
+        -d "disable_web_page_preview=true" \
+        -d "parse_mode=markdown" \
+        -d text="Build throw an error(s)"
+
+    curl -s -X POST "https://api.telegram.org/bot${token}/sendMessage" \
+        -d chat_id="-1001470991493" \
+        -d "disable_web_page_preview=true" \
+        -d "parse_mode=markdown" \
+        -d text="Build throw an error(s)"
+
+    exit 1
+}
+
+# Zipping
+function zipping() {
+    cd AnyKernel || exit 1
+    zip -r9 hmp-perf-${DATE}.zip *
+    cd ..
+}
+check
+compile
+zipping
 END=$(date +"%s")
-
-DIFF=$(( END - START ))
-
-send_msg "Build Selesai | $((DIFF / 60))Menit $((DIFF % 60))Detik | Pembaruan: $(git log --pretty=format:'%h : %s' -5)"
+DIFF=$(($END - $START))
+push
