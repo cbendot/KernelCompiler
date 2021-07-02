@@ -3,7 +3,7 @@ name : xKernelCompiler
 version: 2.1
 steps:
  - name: xKernelCompiler Compilation
-   image: z4nyx/docker:latest
+   image: xyzuan/xdocker:latest
    environment:
      chat_id:
        from_secret: CHAT_ID
