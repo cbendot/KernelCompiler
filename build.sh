@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 echo "Downloading few Dependecies . . ."
-git clone --depth=1 https://github.com/cbendot/Elastics-Toolchain clang
+git clone --depth=1 https://github.com/cbendot/Elastics-Toolchain llvm
 git clone --depth=1 https://github.com/cbendot/kernel_asus_sdm660 asus
 
 # Main
 KERNEL_ROOTDIR=$(pwd)/asus # IMPORTANT ! Fill with your kernel source root directory.
-DEVICE_DEFCONFIG=X00TD_defconfig # IMPORTANT ! Declare your kernel source defconfig file here.
-CLANG_ROOTDIR=$(pwd)/clang # IMPORTANT! Put your clang directory here.
+DEVICE_DEFCONFIG=elastics_defconfig # IMPORTANT ! Declare your kernel source defconfig file here.
+CLANG_ROOTDIR=$(pwd)/llvm # IMPORTANT! Put your clang directory here.
 export KBUILD_BUILD_USER=ben863 # Change with your own name or else.
-export KBUILD_BUILD_HOST=LiteSpeed-DroneCI # Change with your own hostname.
+export KBUILD_BUILD_HOST=Elastics-DroneCI # Change with your own hostname.
 IMAGE=$(pwd)/asus/out/arch/arm64/boot/Image.gz-dtb
 DATE=$(date +"%F-%S")
 START=$(date +"%s")
@@ -83,13 +83,13 @@ function push() {
         -F chat_id="${chat_id}" \
         -F "disable_web_page_preview=true" \
         -F "parse_mode=html" \
-        -F caption="✅ Compile took $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s). | For <b>Zenfone Max Pro M1 (X00TD)</b> | <b>$(${CLANG_ROOTDIR}/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')</b>"
+        -F caption="✅ Compile successfully completed $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s). | For <b>Zenfone Max Pro M1 (X00TD)</b> | <b>$(${CLANG_ROOTDIR}/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')</b>"
 
     curl -F document=@$ZIP "https://api.telegram.org/bot${token}/sendDocument" \
         -F chat_id="-1001470991493" \
         -F "disable_web_page_preview=true" \
         -F "parse_mode=html" \
-        -F caption="✅ Compile took $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s). | For <b>Zenfone Max Pro M1 (X00TD)</b> | <b>$(${CLANG_ROOTDIR}/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')</b>"
+        -F caption="✅ Compile successfully completed $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s). | For <b>Zenfone Max Pro M1 (X00TD)</b> | <b>$(${CLANG_ROOTDIR}/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')</b>"
 
 }
 # Fin Error
@@ -112,7 +112,7 @@ function finerr() {
 # Zipping
 function zipping() {
     cd AnyKernel || exit 1
-    zip -r9 ElasticsPerf-${DATE}.zip *
+    zip -r9 ElasticsPerf-HMP-${DATE}.zip *
     cd ..
 }
 check
