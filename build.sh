@@ -4,7 +4,7 @@ git clone --depth=1 https://github.com/cbendot/elastics-toolchain llvm
 git clone --depth=1 https://github.com/cbendot/kernel_asus_sdm660 hard
 
 # Main
-KERNEL_ROOTDIR=$(pwd)/asus # IMPORTANT ! Fill with your kernel source root directory.
+KERNEL_ROOTDIR=$(pwd)/hard # IMPORTANT ! Fill with your kernel source root directory.
 DEVICE_DEFCONFIG=elastics_defconfig # IMPORTANT ! Declare your kernel source defconfig file here.
 CLANG_ROOTDIR=$(pwd)/llvm # IMPORTANT! Put your clang directory here.
 export KBUILD_BUILD_USER=ben863 # Change with your own name or else.
