@@ -87,7 +87,7 @@ function finerr() {
 function zipping() {
     cd AnyKernel || exit 1
     zip -r9 ElasticsPerf-HMP-${DATE}.zip *
-    cd ...
+    cd ..
 }
 check
 compile
