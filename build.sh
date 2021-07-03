@@ -9,7 +9,7 @@ DEVICE_DEFCONFIG=elastics_defconfig # IMPORTANT ! Declare your kernel source def
 CLANG_ROOTDIR=$(pwd)/llvm # IMPORTANT! Put your clang directory here.
 export KBUILD_BUILD_USER=ben863 # Change with your own name or else.
 export KBUILD_BUILD_HOST=Elastics-DroneCI # Change with your own hostname.
-IMAGE=$(pwd)/asus/out/arch/arm64/boot/Image.gz-dtb
+IMAGE=$(pwd)/hard/out/arch/arm64/boot/Image.gz-dtb
 DATE=$(date +"%F-%S")
 START=$(date +"%s")
 
