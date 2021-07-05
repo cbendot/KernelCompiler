@@ -1,15 +1,27 @@
 #!/usr/bin/env bash
+#
+# Copyright (C) 2021 a xyzprjkt property
+#
 echo "Downloading few Dependecies . . ."
-git clone --depth=1 https://github.com/cbendot/elastics-toolchain llvm
-git clone --depth=1 https://github.com/cbendot/kernel_asus_sdm660 hard
+git clone --depth=1 https://github.com/cbendot/elastics elastics
+git clone --depth=1 https://github.com/cbendot/kernel_asus_sdm660 X00TD
 
 # Main
-KERNEL_ROOTDIR=$(pwd)/hard # IMPORTANT ! Fill with your kernel source root directory.
-DEVICE_DEFCONFIG=elastics_defconfig # IMPORTANT ! Declare your kernel source defconfig file here.
-CLANG_ROOTDIR=$(pwd)/llvm # IMPORTANT! Put your clang directory here.
+KERNEL_ROOTDIR=$(pwd)/X00TD # IMPORTANT ! Fill with your kernel source root directory.
+DEVICE_DEFCONFIG=ElasticsPerf_defconfig # IMPORTANT ! Declare your kernel source defconfig file here.
+CLANG_ROOTDIR=$(pwd)/elastics # IMPORTANT! Put your clang directory here.
 export KBUILD_BUILD_USER=ben863 # Change with your own name or else.
-export KBUILD_BUILD_HOST=Elastics-DroneCI # Change with your own hostname.
-IMAGE=$(pwd)/hard/out/arch/arm64/boot/Image.gz-dtb
+export KBUILD_BUILD_HOST=LiteSpeed-CloudLinux # Change with your own hostname.
+
+# Main Declaration
+CLANG_VER="$("$CLANG_ROOTDIR"/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
+LLD_VER="$("$CLANG_ROOTDIR"/bin/ld.lld --version | head -n 1)"
+GCC64_VER="$("$CLANG_ROOTDIR"/bin/aarch64-linux-gnu --version | head -n 1)"
+GCC32_VER="$("$CLANG_ROOTDIR"/bin/arm-linux-gnueabi --version | head -n 1)"
+export KBUILD_COMPILER_STRING="$GCC64_VER"
+export KBUILD_COMPILER_STRING="$GCC32_VER"
+export KBUILD_COMPILER_STRING="$CLANG_VER with $LLD_VER"
+IMAGE=$(pwd)/X00TD/out/arch/arm64/boot/Image.gz-dtb
 DATE=$(date +"%F-%S")
 START=$(date +"%s")
 
@@ -17,13 +29,13 @@ START=$(date +"%s")
 # Warning !! Dont Change anything there without known reason.
 function check() {
 echo ================================================
-echo Suit-Suit... He-He...
-echo version : rev1.5 - gaspoll
+echo Kernel Compiler Started!
+echo version : rev1.5 - gaspoll modified
 echo ================================================
 echo BUILDER NAME = ${KBUILD_BUILD_USER}
 echo BUILDER HOSTNAME = ${KBUILD_BUILD_HOST}
 echo DEVICE_DEFCONFIG = ${DEVICE_DEFCONFIG}
-echo CLANG_VERSION = $(${CLANG_ROOTDIR}/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')
+echo TOOLCHAIN_VERSION = ${KBUILD_COMPILER_STRING}
 echo CLANG_ROOTDIR = ${CLANG_ROOTDIR}
 echo KERNEL_ROOTDIR = ${KERNEL_ROOTDIR}
 echo ================================================
@@ -32,17 +44,30 @@ echo ================================================
 # Compiler
 function compile() {
 
+   curl -s -X POST "https://api.telegram.org/bot${token}/sendSticker" \
+        -d sticker="CAACAgUAAxkBAAEChbdg3-SJAabmOMYa5Pax18UWLnLBVAACpgIAApk4AAFXSahPNJ_y_k0gBA" \
+        -d chat_id="${chat_id}"
+
+   curl -s -X POST "https://api.telegram.org/bot${token}/sendSticker" \
+        -d sticker="CAACAgUAAxkBAAEChbdg3-SJAabmOMYa5Pax18UWLnLBVAACpgIAApk4AAFXSahPNJ_y_k0gBA" \
+        -d chat_id="-1001470991493"
+
    # Private CI
    curl -s -X POST "https://api.telegram.org/bot${token}/sendMessage" \
         -d chat_id="${chat_id}" \
         -d "disable_web_page_preview=true" \
         -d "parse_mode=html" \
-        -d text="<b>🔨Suit-Suit... He-He... Building Kernel</b>%0ABuilder Name : <code>${KBUILD_BUILD_USER}</code>%0ABuilder Host : <code>${KBUILD_BUILD_HOST}</code>%0ADevice Defconfig: <code>${DEVICE_DEFCONFIG}</code>%0AClang Version : <code>$(${CLANG_ROOTDIR}/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')</code>%0AClang Rootdir : <code>${CLANG_ROOTDIR}</code>%0AKernel Rootdir : <code>${KERNEL_ROOTDIR}</code>%0A1:00 ●━━━━━━─────── 2:00 ⇆ㅤㅤㅤ ㅤ◁ㅤㅤ❚❚ㅤㅤ▷ㅤㅤㅤㅤ↻"  
+        -d text="<b>🔨 Kernel Compiler Started!</b>%0ABuilder Name : <code>${KBUILD_BUILD_USER}</code>%0ABuilder Host : <code>${KBUILD_BUILD_HOST}</code>%0ADevice Defconfig: <code>${DEVICE_DEFCONFIG}</code>%0AClang Version : <code>${KBUILD_COMPILER_STRING}</code>%0AClang Rootdir : <code>${CLANG_ROOTDIR}</code>%0AKernel Rootdir : <code>${KERNEL_ROOTDIR}</code>"
 
   cd ${KERNEL_ROOTDIR}
   make -j$(nproc) O=out ARCH=arm64 ${DEVICE_DEFCONFIG}
   make -j$(nproc) ARCH=arm64 O=out \
-	CC=${CLANG_ROOTDIR}/bin/clang \
+  	CC=${CLANG_ROOTDIR}/bin/clang \
+	AR=${CLANG_ROOTDIR}/bin/llvm-ar \
+	NM=${CLANG_ROOTDIR}/bin/llvm-nm \
+	OBJCOPY=${CLANG_ROOTDIR}/bin/llvm-objcopy \
+	OBJDUMP=${CLANG_ROOTDIR}/bin/llvm-objdump \
+	STRIP=${CLANG_ROOTDIR}/bin/llvm-strip \
 	CROSS_COMPILE=${CLANG_ROOTDIR}/bin/aarch64-linux-gnu- \
 	CROSS_COMPILE_ARM32=${CLANG_ROOTDIR}/bin/arm-linux-gnueabi-
 
@@ -54,13 +79,6 @@ function compile() {
 	cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
 }
 
-# sticker plox
-function sticker() {
-    curl -s -X POST "https://api.telegram.org/bot${token}/sendSticker" \
-        -d sticker="CAACAgUAAxkBAAEChmlg4DSByYxzV0PI4C8w6OhTeqMEpwACpgIAApk4AAFXSahPNJ_y_k0gBA" \
-        -d chat_id="${chat_id}"
-}
-
 # Push kernel to channel
 function push() {
     cd AnyKernel
@@ -69,16 +87,16 @@ function push() {
         -F chat_id="${chat_id}" \
         -F "disable_web_page_preview=true" \
         -F "parse_mode=html" \
-        -F caption="✅ Compile successfully completed $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s). | For <b>Zenfone Max Pro M1 (X00TD)</b> | <b>$(${CLANG_ROOTDIR}/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g')</b>"
-}
+        -F caption="✅ Compile Done!%0A<code>$(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s).</code>%0A<b>${KBUILD_COMPILER_STRING}</b>"
 
+}
 # Fin Error
 function finerr() {
     curl -s -X POST "https://api.telegram.org/bot${token}/sendMessage" \
         -d chat_id="${chat_id}" \
         -d "disable_web_page_preview=true" \
         -d "parse_mode=markdown" \
-        -d text="❌ Build throw an error(s)"
+        -d text="Build throw an error(s)"
 
     exit 1
 }
@@ -95,4 +113,3 @@ zipping
 END=$(date +"%s")
 DIFF=$(($END - $START))
 push
-
