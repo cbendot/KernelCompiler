@@ -16,9 +16,8 @@ export KBUILD_BUILD_HOST=LiteSpeed-CloudLinux # Change with your own hostname.
 # Main Declaration
 CLANG_VER="$("$CLANG_ROOTDIR"/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
 LLD_VER="$("$CLANG_ROOTDIR"/bin/ld.lld --version | head -n 1)"
-GCC64_VER="$("$CLANG_ROOTDIR"/bin/aarch64-linux-gnu --version | head -n 1)"
-GCC32_VER="$("$CLANG_ROOTDIR"/bin/arm-linux-gnueabi --version | head -n 1)"
-export KBUILD_COMPILER_STRING="$CLANG_VER with $LLD_VER $GCC64_VER and $GCC32_VER"
+GIT_COMM="$("$CLANG_ROOTDIR"git log --pretty=format:'%h: %s' -n1)"
+export KBUILD_COMPILER_STRING="$CLANG_VER with $LLD_VER $GIT_COMM"
 IMAGE=$(pwd)/hard/out/arch/arm64/boot/Image.gz-dtb
 DATE=$(date +"%F-%S")
 START=$(date +"%s")
@@ -51,7 +50,7 @@ function compile() {
         -d chat_id="${chat_id}" \
         -d "disable_web_page_preview=true" \
         -d "parse_mode=html" \
-        -d text="<b>🔨 Kernel Compiler Started!</b>%0ABuilder Name : <code>${KBUILD_BUILD_USER}</code>%0ABuilder Host : <code>${KBUILD_BUILD_HOST}</code>%0ADevice Defconfig: <code>${DEVICE_DEFCONFIG}</code>%0A<code>${KBUILD_COMPILER_STRING}</code>%0AClang Rootdir : <code>${CLANG_ROOTDIR}</code>%0AKernel Rootdir : <code>${KERNEL_ROOTDIR}</code>"
+        -d text="<b>🔨 Kernel Compiler Started!</b>%0ABuilder Name : <code>${KBUILD_BUILD_USER}</code>%0ABuilder Host : <code>${KBUILD_BUILD_HOST}</code>%0ADevice Defconfig: <code>${DEVICE_DEFCONFIG}</code>%0A%0A<code>${KBUILD_COMPILER_STRING}</code>%0AClang Rootdir : <code>${CLANG_ROOTDIR}</code>%0AKernel Rootdir : <code>${KERNEL_ROOTDIR}</code>"
 
   cd ${KERNEL_ROOTDIR}
   make -j$(nproc) O=out ARCH=arm64 ${DEVICE_DEFCONFIG}
@@ -81,7 +80,7 @@ function push() {
         -F chat_id="${chat_id}" \
         -F "disable_web_page_preview=true" \
         -F "parse_mode=html" \
-        -F caption="✅ Compile Done!%0A<code>$(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s).</code>%0A<code>${KBUILD_COMPILER_STRING}</code>"
+        -F caption="✅ Kernel Compiled Done! || <code>$(($DIFF / 60)) minute(s) $(($DIFF % 60)) second(s). </code> || <code>${KBUILD_COMPILER_STRING}</code>"
 
 }
 # Fin Error
