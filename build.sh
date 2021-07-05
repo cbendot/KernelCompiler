@@ -3,13 +3,13 @@
 # Copyright (C) 2021 a xyzprjkt property
 #
 echo "Downloading few Dependecies . . ."
-git clone --depth=1 https://github.com/cbendot/elastics elastics
-git clone --depth=1 https://github.com/cbendot/kernel_asus_sdm660 X00TD
+git clone --depth=1 https://github.com/cbendot/elastics-toolchain llvm
+git clone --depth=1 https://github.com/cbendot/kernel_asus_sdm660 hard
 
 # Main
-KERNEL_ROOTDIR=$(pwd)/X00TD # IMPORTANT ! Fill with your kernel source root directory.
+KERNEL_ROOTDIR=$(pwd)/hard # IMPORTANT ! Fill with your kernel source root directory.
 DEVICE_DEFCONFIG=ElasticsPerf_defconfig # IMPORTANT ! Declare your kernel source defconfig file here.
-CLANG_ROOTDIR=$(pwd)/elastics # IMPORTANT! Put your clang directory here.
+CLANG_ROOTDIR=$(pwd)/llvm # IMPORTANT! Put your clang directory here.
 export KBUILD_BUILD_USER=ben863 # Change with your own name or else.
 export KBUILD_BUILD_HOST=LiteSpeed-CloudLinux # Change with your own hostname.
 
@@ -47,10 +47,6 @@ function compile() {
    curl -s -X POST "https://api.telegram.org/bot${token}/sendSticker" \
         -d sticker="CAACAgUAAxkBAAEChbdg3-SJAabmOMYa5Pax18UWLnLBVAACpgIAApk4AAFXSahPNJ_y_k0gBA" \
         -d chat_id="${chat_id}"
-
-   curl -s -X POST "https://api.telegram.org/bot${token}/sendSticker" \
-        -d sticker="CAACAgUAAxkBAAEChbdg3-SJAabmOMYa5Pax18UWLnLBVAACpgIAApk4AAFXSahPNJ_y_k0gBA" \
-        -d chat_id="-1001470991493"
 
    # Private CI
    curl -s -X POST "https://api.telegram.org/bot${token}/sendMessage" \
