@@ -16,8 +16,7 @@ export KBUILD_BUILD_HOST=LiteSpeed-CloudLinux # Change with your own hostname.
 # Main Declaration
 CLANG_VER="$("$CLANG_ROOTDIR"/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
 LLD_VER="$("$CLANG_ROOTDIR"/bin/ld.lld --version | head -n 1)"
-GIT_COMM="$("$CLANG_ROOTDIR"git log --pretty=format:'%h: %s' -n1)"
-export KBUILD_COMPILER_STRING="$CLANG_VER with $LLD_VER $GIT_COMM"
+export KBUILD_COMPILER_STRING="$CLANG_VER with $LLD_VER"
 IMAGE=$(pwd)/hard/out/arch/arm64/boot/Image.gz-dtb
 DATE=$(date +"%F-%S")
 START=$(date +"%s")
@@ -45,12 +44,12 @@ function compile() {
         -d sticker="CAACAgUAAxkBAAEChbdg3-SJAabmOMYa5Pax18UWLnLBVAACpgIAApk4AAFXSahPNJ_y_k0gBA" \
         -d chat_id="${chat_id}"
 
-   # Private CI
+# Private CI
    curl -s -X POST "https://api.telegram.org/bot${token}/sendMessage" \
         -d chat_id="${chat_id}" \
         -d "disable_web_page_preview=true" \
         -d "parse_mode=html" \
-        -d text="<b>🔨 Kernel Compiler Started!</b>%0ABuilder Name : <code>${KBUILD_BUILD_USER}</code>%0ABuilder Host : <code>${KBUILD_BUILD_HOST}</code>%0ADevice Defconfig: <code>${DEVICE_DEFCONFIG}</code>%0A%0A<code>${KBUILD_COMPILER_STRING}</code>%0AClang Rootdir : <code>${CLANG_ROOTDIR}</code>%0AKernel Rootdir : <code>${KERNEL_ROOTDIR}</code>"
+        -d text="<b>🔨 Building Kernel Started!</b>%0ABuilder Name: <code>${KBUILD_BUILD_USER}</code>%0ABuilder Host: <code>${KBUILD_BUILD_HOST}</code>%0ADevice Defconfig: <code>${DEVICE_DEFCONFIG}</code>%0AClang Rootdir : <code>${CLANG_ROOTDIR}</code>%0AKernel Rootdir : <code>${KERNEL_ROOTDIR}</code>%0A%0A<code>${KBUILD_COMPILER_STRING}</code>"
 
   cd ${KERNEL_ROOTDIR}
   make -j$(nproc) O=out ARCH=arm64 ${DEVICE_DEFCONFIG}
@@ -80,16 +79,23 @@ function push() {
         -F chat_id="${chat_id}" \
         -F "disable_web_page_preview=true" \
         -F "parse_mode=html" \
-        -F caption="✅ Kernel Compiled Done! || <code>$(($DIFF / 60)) minute(s) $(($DIFF % 60)) second(s). </code> || <code>${KBUILD_COMPILER_STRING}</code>"
-
+        -F caption="1:00 ●━━━━━━─────── 2:00 ⇆ㅤㅤㅤ ㅤ◁ㅤㅤ❚❚ㅤㅤ▷ㅤㅤㅤㅤ↻"
 }
+
+#Private CI
+curl -s -X POST "https://api.telegram.org/bot${token}/sendMessage" \
+        -d chat_id="${chat_id}" \
+        -d "disable_web_page_preview=true" \
+        -d "parse_mode=html" \
+        -d text="✅ Build Done !%0A%0A<code>$(git log --pretty=format:'%h : %s' -5)</code>%0ADate: <code>$DATE</code>%0A%0A<code>$(($DIFF / 60)) minute(s) $(($DIFF % 60)) second(s)</code>"
+
 # Fin Error
 function finerr() {
     curl -s -X POST "https://api.telegram.org/bot${token}/sendMessage" \
         -d chat_id="${chat_id}" \
         -d "disable_web_page_preview=true" \
         -d "parse_mode=markdown" \
-        -d text="❌ Build throw an error(s)%0A<code>$(($DIFF / 60)) minute(s) and $(($DIFF % 60)) second(s).</code>"
+        -d text="❌ Build throw an error(s)%0A%0A<code>$(($DIFF / 60)) minute(s) $(($DIFF % 60)) second(s) </code>"
 
     exit 1
 }
