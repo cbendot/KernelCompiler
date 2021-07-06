@@ -18,7 +18,7 @@ CLANG_VER="$("$CLANG_ROOTDIR"/bin/clang --version | head -n 1 | perl -pe 's/\(ht
 LLD_VER="$("$CLANG_ROOTDIR"/bin/ld.lld --version | head -n 1)"
 export KBUILD_COMPILER_STRING="$CLANG_VER with $LLD_VER"
 IMAGE=$(pwd)/hard/out/arch/arm64/boot/Image.gz-dtb
-DATE=$(date +"%F-%S")
+DATE=$(date "+%B %-d, %Y")
 START=$(date +"%s")
 
 # Checking environtment
@@ -49,7 +49,7 @@ function compile() {
         -d chat_id="${chat_id}" \
         -d "disable_web_page_preview=true" \
         -d "parse_mode=html" \
-        -d text="<b>🔨 Building Kernel Started!</b>%0ABuilder Name: <code>${KBUILD_BUILD_USER}</code>%0ABuilder Host: <code>${KBUILD_BUILD_HOST}</code>%0ABuild Date: <code>$DATE</code>%0ABuild started on: <code>Drone CI</code>%0AClang Rootdir : <code>${CLANG_ROOTDIR}</code>%0AKernel Rootdir : <code>${KERNEL_ROOTDIR}</code>%0A%0A<code>${KBUILD_COMPILER_STRING}</code>%0A%0A1:00 ●━━━━━━─────── 2:00 ⇆ㅤㅤㅤ ㅤ◁ㅤㅤ❚❚ㅤㅤ▷ㅤㅤㅤㅤ↻"
+        -d text="<b>🔨 Building Kernel Started!</b>%0ABuilder Name: <code>${KBUILD_BUILD_USER}</code>%0ABuilder Host: <code>${KBUILD_BUILD_HOST}</code>%0ABuild Date: <code>$DATE</code>%0ABuild started on: <code>Drone CI</code>%0AClang Rootdir : <code>${CLANG_ROOTDIR}</code>%0AKernel Rootdir : <code>${KERNEL_ROOTDIR}</code>%0ALast Commit Message:<code>$(git log --pretty=format:'%h : %s' -5)</code>%0ACompiler Info:%0A<code>${KBUILD_COMPILER_STRING}</code>%0A%0A1:00 ●━━━━━━─────── 2:00 ⇆ㅤㅤㅤ ㅤ◁ㅤㅤ❚❚ㅤㅤ▷ㅤㅤㅤㅤ↻"
 
   cd ${KERNEL_ROOTDIR}
   make -j$(nproc) O=out ARCH=arm64 ${DEVICE_DEFCONFIG}
@@ -79,7 +79,7 @@ function push() {
         -F chat_id="${chat_id}" \
         -F "disable_web_page_preview=true" \
         -F "parse_mode=html" \
-        -F caption="✅ <code>$(($DIFF / 60)) minute(s) $(($DIFF % 60)) second(s)</code> <code>$(git log --pretty=format:'%h : %s' -5)</code> <code>$DATE</code>"
+        -F caption="✅ <code>$(($DIFF / 60)) minute(s) $(($DIFF % 60)) second(s)</code>  <code>$DATE</code>"
 }
         
 # Fin Error
