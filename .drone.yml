@@ -1,0 +1,13 @@
+kind: pipeline
+name : xKernelCompiler
+version: 2.1
+steps:
+ - name: xKernelCompiler Compilation
+   image: xyzuan/xdocker:latest
+   environment:
+     chat_id:
+       from_secret: CHAT_ID
+     token:
+       from_secret: TOKEN
+   commands:
+       - bash build.sh
